@@ -1,0 +1,43 @@
+name: 1 - Watch traders
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"      # every 2 hours
+  workflow_dispatch:            # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write               # needed to commit state.json back
+
+concurrency:
+  group: polymarket-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install requests
+
+      - name: Check tracked wallets
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MIN_TRADE_USD: "1000"
+          CONSENSUS_MIN: "3"
+        run: python tracker.py watch
+
+      - name: Persist state
+        run: |
+          git config user.name "polytracker-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add state.json
+          git diff --staged --quiet || git commit -m "state $(date -u +%FT%TZ)"
+          git pull --rebase --autostash || true
+          git push || true
