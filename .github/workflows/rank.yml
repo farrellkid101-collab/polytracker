@@ -1,0 +1,30 @@
+name: 2 - Rebuild watchlist
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"        # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rank:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Rank traders by cross-window consistency
+        env:
+          TOP_N_PER_WINDOW: "100"
+          MIN_WINDOWS: "3"
+          WATCHLIST_SIZE: "25"
+        run: python tracker.py rank
+      - name: Commit watchlist
+        run: |
+          git config user.name "polytracker-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git push || true
