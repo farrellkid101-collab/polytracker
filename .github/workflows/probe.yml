@@ -1,0 +1,18 @@
+name: 0 - Test connection
+
+# Manual only. Run this FIRST to confirm Polymarket's endpoints are reachable
+# and to see which leaderboard URL currently works. Read the log output.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python tracker.py probe
