@@ -29,8 +29,10 @@ import requests
 UA = {"User-Agent": "polytracker/1.0 (personal research script)"}
 DATA_API = "https://data-api.polymarket.com"
 
-WINDOWS = ["1d", "7d", "30d", "all"]
-WINDOW_WEIGHT = {"1d": 0.5, "7d": 2.0, "30d": 3.0, "all": 2.5}
+# Confirmed against docs.polymarket.com (Data API OpenAPI spec, /v1/leaderboard)
+WINDOWS = ["DAY", "WEEK", "MONTH", "ALL"]
+WINDOW_WEIGHT = {"DAY": 0.5, "WEEK": 2.0, "MONTH": 3.0, "ALL": 2.5}
+PAGE_SIZE = 50          # hard max the API allows per request
 TOP_N_PER_WINDOW = int(os.getenv("TOP_N_PER_WINDOW", "100"))
 MIN_WINDOWS = int(os.getenv("MIN_WINDOWS", "3"))          # must appear in >= this many windows
 WATCHLIST_SIZE = int(os.getenv("WATCHLIST_SIZE", "25"))
@@ -46,18 +48,13 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 WATCHLIST_FILE = "watchlist.json"
 STATE_FILE = "state.json"
 
-# Polymarket has moved the leaderboard host around. Rather than hardcode one
-# and silently break, we try each shape and cache whichever answers.
-LEADERBOARD_CANDIDATES = [
-    ("https://lb-api.polymarket.com/leaderboard",
-     lambda w: {"window": w, "limit": TOP_N_PER_WINDOW, "rankType": "pnl"}),
-    (f"{DATA_API}/leaderboard",
-     lambda w: {"window": w, "limit": TOP_N_PER_WINDOW, "rankType": "pnl"}),
-    (f"{DATA_API}/ranking",
-     lambda w: {"window": w, "limit": TOP_N_PER_WINDOW, "rankType": "pnl"}),
-    (f"{DATA_API}/leaderboard/profit",
-     lambda w: {"window": w, "limit": TOP_N_PER_WINDOW}),
-]
+# Official endpoint per the Data API spec. Params are case-sensitive enums:
+#   category=OVERALL|POLITICS|SPORTS|ESPORTS|CRYPTO|CULTURE|MENTIONS|WEATHER|
+#            ECONOMICS|TECH|FINANCE
+#   timePeriod=DAY|WEEK|MONTH|ALL      orderBy=PNL|VOL
+#   limit<=50, offset<=1000
+LEADERBOARD_URL = f"{DATA_API}/v1/leaderboard"
+CATEGORY = os.getenv("CATEGORY", "OVERALL")
 
 
 # ----------------------------------------------------------------------------
@@ -112,19 +109,39 @@ def normalize_rows(payload):
     return out
 
 
-def fetch_leaderboard(window, cached=None):
-    """Returns (rows, working_url_index)."""
-    order = ([cached] if cached is not None else []) + \
-            [i for i in range(len(LEADERBOARD_CANDIDATES)) if i != cached]
-    for i in order:
-        url, mk = LEADERBOARD_CANDIDATES[i]
+def fetch_leaderboard(window):
+    """Page through the leaderboard until we have TOP_N_PER_WINDOW traders.
+
+    The API caps limit at 50, so anything above that needs offset pagination.
+    """
+    collected = []
+    offset = 0
+    while len(collected) < TOP_N_PER_WINDOW and offset <= 1000:
+        params = {
+            "category": CATEGORY,
+            "timePeriod": window,
+            "orderBy": "PNL",
+            "limit": min(PAGE_SIZE, TOP_N_PER_WINDOW - len(collected)),
+            "offset": offset,
+        }
         try:
-            rows = normalize_rows(get(url, mk(window), tries=2))
-            if rows:
-                return rows, i
-        except Exception:
-            continue
-    return [], cached
+            rows = normalize_rows(get(LEADERBOARD_URL, params))
+        except Exception as e:
+            print(f"    ! {window} offset {offset}: {e}")
+            break
+        if not rows:
+            break
+        collected.extend(rows)
+        offset += len(rows)
+        time.sleep(0.3)
+
+    # Dedupe while preserving rank order
+    seen, out = set(), []
+    for r in collected:
+        if r["wallet"] not in seen:
+            seen.add(r["wallet"])
+            out.append(r)
+    return out
 
 
 # ----------------------------------------------------------------------------
@@ -134,10 +151,9 @@ def rank():
     scores = defaultdict(float)
     appearances = defaultdict(list)
     meta = {}
-    working = None
 
     for w in WINDOWS:
-        rows, working = fetch_leaderboard(w, working)
+        rows = fetch_leaderboard(w)
         print(f"  {w:>4}: {len(rows)} rows")
         for rank_i, row in enumerate(rows):
             wal = row["wallet"]
@@ -150,7 +166,7 @@ def rank():
         time.sleep(0.5)
 
     if not scores:
-        sys.exit("No leaderboard data returned. Run `python tracker.py probe`.")
+        sys.exit('No leaderboard data returned. Run the "0 - Test connection" workflow.')
 
     # THE CONSISTENCY FILTER: must show up in several windows, and specifically
     # must be present in a medium-term window. One lucky month doesn't count.
@@ -159,7 +175,7 @@ def rank():
         wins = appearances[wal]
         if len(wins) < MIN_WINDOWS:
             continue
-        if "30d" not in wins and "all" not in wins:
+        if "MONTH" not in wins and "ALL" not in wins:
             continue
         candidates.append((sc, wal, wins))
 
@@ -343,17 +359,19 @@ def now_iso():
 
 
 def probe():
-    print("Testing leaderboard endpoints...\n")
-    for url, mk in LEADERBOARD_CANDIDATES:
-        p = mk("7d")
+    print("Leaderboard endpoint check:\n")
+    for w in WINDOWS:
+        params = {"category": CATEGORY, "timePeriod": w,
+                  "orderBy": "PNL", "limit": 5, "offset": 0}
         try:
-            r = requests.get(url, params=p, headers=UA, timeout=20)
+            r = requests.get(LEADERBOARD_URL, params=params, headers=UA, timeout=20)
             rows = normalize_rows(r.json()) if r.ok else []
-            print(f"{r.status_code}  {url}  -> {len(rows)} parsed rows")
+            print(f"{r.status_code}  timePeriod={w:<6} -> {len(rows)} parsed rows")
             if rows:
                 print(f"      sample: {rows[0]}")
         except Exception as e:
-            print(f"ERR  {url}  -> {e}")
+            print(f"ERR  timePeriod={w} -> {e}")
+
     print("\nData API check:")
     for ep in ["/positions", "/activity", "/value"]:
         try:
