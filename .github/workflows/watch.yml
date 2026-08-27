@@ -2,7 +2,7 @@ name: 1 - Watch traders
 
 on:
   schedule:
-    - cron: "0 */2 * * *"      # every 2 hours
+    - cron: "0 * * * *"        # hourly — required for the 60-min freshness gate
   workflow_dispatch:            # lets you run it manually from the Actions tab
 
 permissions:
@@ -27,10 +27,15 @@ jobs:
       - name: Check tracked wallets
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SPORTS_WEBHOOK: ${{ secrets.SPORTS_WEBHOOK }}
+          CRYPTO_WEBHOOK: ${{ secrets.CRYPTO_WEBHOOK }}
+          OTHER_WEBHOOK: ${{ secrets.OTHER_WEBHOOK }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MIN_TRADE_USD: "500"
           CONSENSUS_MIN: "3"
+          MAX_AGE_MIN: "120"       # only alert on trades newer than this
+          LOOKBACK_HOURS: "6"      # how far back to fetch (safety margin)
         run: python tracker.py watch
 
       - name: Persist state
