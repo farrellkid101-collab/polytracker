@@ -16,6 +16,7 @@ Usage:
 
 import json
 import os
+import re
 import sys
 import time
 from collections import defaultdict
@@ -38,6 +39,20 @@ MIN_WINDOWS = int(os.getenv("MIN_WINDOWS", "3"))          # must appear in >= th
 WATCHLIST_SIZE = int(os.getenv("WATCHLIST_SIZE", "25"))
 
 MIN_TRADE_USD = float(os.getenv("MIN_TRADE_USD", "1000"))  # ignore dust
+
+# Freshness: only alert on trades placed within this many minutes.
+# LOOKBACK_HOURS is how far back we FETCH (safety margin for delayed runs);
+# MAX_AGE_MIN is the hard filter on what actually reaches you.
+LOOKBACK_HOURS = float(os.getenv("LOOKBACK_HOURS", "6"))
+MAX_AGE_MIN = float(os.getenv("MAX_AGE_MIN", "60"))
+
+# Route each category to its own Discord channel (optional).
+# Falls back to DISCORD_WEBHOOK if a specific one isn't set.
+SPORTS_WEBHOOK = os.getenv("SPORTS_WEBHOOK", "").strip()
+CRYPTO_WEBHOOK = os.getenv("CRYPTO_WEBHOOK", "").strip()
+OTHER_WEBHOOK = os.getenv("OTHER_WEBHOOK", "").strip()
+
+GAMMA = "https://gamma-api.polymarket.com"
 CONSENSUS_MIN = int(os.getenv("CONSENSUS_MIN", "3"))       # N wallets, same market+side
 CONSENSUS_HOURS = int(os.getenv("CONSENSUS_HOURS", "24"))
 
@@ -145,6 +160,106 @@ def fetch_leaderboard(window):
 
 
 # ----------------------------------------------------------------------------
+# CATEGORY CLASSIFICATION
+# ----------------------------------------------------------------------------
+# Polymarket tags events, but the /activity feed doesn't include tags. So we
+# classify from the market title/slug, then (optionally) confirm via Gamma.
+# Results are cached in state.json so we don't re-query the same market.
+
+SPORT_WORDS = [
+    "nfl", "nba", "mlb", "nhl", "ncaa", "college football", "college basketball",
+    "premier league", "la liga", "serie a", "bundesliga", "ligue 1", "epl",
+    "champions league", "uefa", "fifa", "world cup", "mls", "soccer",
+    "super bowl", "world series", "stanley cup", "finals", "playoff",
+    "ufc", "mma", "boxing", "wwe", "tennis", "atp", "wta", "us open",
+    "wimbledon", "french open", "australian open", "golf", "pga", "masters",
+    "f1", "formula 1", "grand prix", "nascar", "cricket", "ipl", "rugby",
+    "olympics", "heisman", "mvp", "vs.", " vs ", "beat the", "score",
+]
+ESPORT_WORDS = [
+    "esports", "league of legends", "lol worlds", "dota", "csgo", "cs2",
+    "counter-strike", "valorant", "overwatch", "rocket league", "starcraft",
+    "call of duty", "cdl", "lck", "lpl", "lec", "fortnite", "apex legends",
+]
+CRYPTO_WORDS = [
+    "bitcoin", "btc", "ethereum", "eth", "solana", "sol ", "xrp", "ripple",
+    "dogecoin", "doge", "crypto", "altcoin", "stablecoin", "usdc", "usdt",
+    "binance", "coinbase", "etf approval", "halving", "memecoin", "token",
+    "cardano", "ada", "avalanche", "chainlink", "polygon", "matic",
+]
+POLITICS_WORDS = [
+    "election", "president", "senate", "house of representatives", "congress",
+    "governor", "primary", "nominee", "parliament", "prime minister",
+    "supreme court", "impeach", "cabinet", "secretary of", "vote", "ballot",
+    "democrat", "republican", "gop", "poll", "approval rating", "referendum",
+]
+ECON_WORDS = [
+    "fed ", "federal reserve", "interest rate", "rate cut", "rate hike",
+    "inflation", "cpi", "gdp", "recession", "unemployment", "jobs report",
+    "s&p", "nasdaq", "dow jones", "treasury", "tariff", "earnings",
+]
+TECH_WORDS = [
+    "openai", "gpt", "anthropic", "claude", "gemini", "llm", "agi",
+    "apple", "tesla", "spacex", "nvidia", "ipo", "acquisition", "chatgpt",
+]
+
+BUCKETS = [
+    ("ESPORTS", ESPORT_WORDS),     # before SPORTS — "league" overlaps
+    ("SPORTS", SPORT_WORDS),
+    ("CRYPTO", CRYPTO_WORDS),
+    ("POLITICS", POLITICS_WORDS),
+    ("ECONOMICS", ECON_WORDS),
+    ("TECH", TECH_WORDS),
+]
+
+# Word-boundary matching. Substring matching breaks badly here: "LEC" (an
+# esports league) is inside "election", "SOL" is inside "solar", etc.
+_PATTERNS = {
+    name: re.compile("|".join(r"\b" + re.escape(w.strip()) + r"\b" for w in words))
+    for name, words in BUCKETS
+}
+
+# Where each bucket's alerts go
+ROUTES = {
+    "SPORTS": lambda: SPORTS_WEBHOOK or DISCORD_WEBHOOK,
+    "ESPORTS": lambda: SPORTS_WEBHOOK or DISCORD_WEBHOOK,
+    "CRYPTO": lambda: CRYPTO_WEBHOOK or OTHER_WEBHOOK or DISCORD_WEBHOOK,
+}
+
+
+def classify(title, slug, cache):
+    """Return a category string. Cached per market slug."""
+    key = slug or title
+    if key in cache:
+        return cache[key]
+
+    blob = f"{title} {slug}".lower().replace("-", " ")
+    result = None
+    for name, words in BUCKETS:
+        if any(_PATTERNS[name].search(blob) for w in [1]):
+            result = name
+            break
+
+    # Ambiguous? Ask Gamma for the event's real tags.
+    if result is None and slug:
+        try:
+            ev = get(f"{GAMMA}/events", {"slug": slug}, tries=1)
+            if isinstance(ev, list) and ev:
+                tags = [t.get("label", "").upper() for t in (ev[0].get("tags") or [])]
+                for cand in ["SPORTS", "ESPORTS", "CRYPTO", "POLITICS",
+                             "ECONOMICS", "TECH", "CULTURE"]:
+                    if any(cand in t for t in tags):
+                        result = cand
+                        break
+        except Exception:
+            pass
+
+    result = result or "OTHER"
+    cache[key] = result
+    return result
+
+
+# ----------------------------------------------------------------------------
 # RANK
 # ----------------------------------------------------------------------------
 def rank():
@@ -234,15 +349,19 @@ def wallet_stats(wallet):
 # ----------------------------------------------------------------------------
 def watch():
     if not os.path.exists(WATCHLIST_FILE):
-        sys.exit("No watchlist.json. Run `python tracker.py rank` first.")
+        sys.exit("No watchlist.json. Run the 'Rebuild watchlist' workflow first.")
 
     traders = json.load(open(WATCHLIST_FILE))["traders"]
     state = json.load(open(STATE_FILE)) if os.path.exists(STATE_FILE) else {}
     seen = set(state.get("seen_tx", []))
-    recent = state.get("recent", [])   # rolling window for consensus detection
+    recent = state.get("recent", [])
+    cat_cache = state.get("categories", {})
 
     new_events = []
-    cutoff = time.time() - 60 * 60 * 8   # look back 8h (covers a 2h cadence w/ margin)
+    now = time.time()
+    fetch_cutoff = now - LOOKBACK_HOURS * 3600     # how far back we look
+    age_cutoff = now - MAX_AGE_MIN * 60            # how fresh it must be to alert
+    stale_skipped = 0
 
     for t in traders:
         try:
@@ -256,7 +375,7 @@ def watch():
 
         for a in act:
             ts = int(a.get("timestamp") or 0)
-            if ts < cutoff:
+            if ts < fetch_cutoff:
                 continue
             key = a.get("transactionHash") or f"{t['wallet']}-{ts}-{a.get('asset')}"
             if key in seen:
@@ -266,80 +385,117 @@ def watch():
                 seen.add(key)
                 continue
 
+            # Freshness gate — mark seen either way so it never resurfaces
+            if ts < age_cutoff:
+                seen.add(key)
+                stale_skipped += 1
+                continue
+
+            title = a.get("title") or a.get("slug") or "(unknown market)"
+            slug = a.get("eventSlug") or a.get("slug") or ""
+            cat = classify(title, slug, cat_cache)
+
             ev = {
-                "key": key,
-                "ts": ts,
+                "key": key, "ts": ts, "cat": cat,
                 "trader": t["name"] or t["wallet"][:10],
-                "wallet": t["wallet"],
-                "score": t["consistency_score"],
-                "title": a.get("title") or a.get("slug") or "(unknown market)",
-                "outcome": a.get("outcome") or "",
-                "side": a.get("side") or "",
-                "price": float(a.get("price") or 0),
-                "usd": usd,
-                "market": a.get("conditionId") or a.get("slug") or "",
+                "wallet": t["wallet"], "score": t["consistency_score"],
+                "title": title, "outcome": a.get("outcome") or "",
+                "side": a.get("side") or "", "price": float(a.get("price") or 0),
+                "usd": usd, "market": a.get("conditionId") or slug,
             }
             seen.add(key)
             new_events.append(ev)
             recent.append(ev)
         time.sleep(0.25)
 
-    # Trim rolling window
-    rc = time.time() - CONSENSUS_HOURS * 3600
+    # Trim rolling consensus window
+    rc = now - CONSENSUS_HOURS * 3600
     recent = [e for e in recent if e["ts"] >= rc]
 
-    # Consensus: distinct tracked wallets, same market + outcome + side
-    clusters = defaultdict(set)
-    detail = defaultdict(list)
+    clusters, detail = defaultdict(set), defaultdict(list)
     for e in recent:
         k = (e["market"], e["outcome"], e["side"])
         clusters[k].add(e["wallet"])
         detail[k].append(e)
 
-    consensus = [(k, v) for k, v in clusters.items() if len(v) >= CONSENSUS_MIN]
     fired = set(state.get("fired_consensus", []))
-    fresh_consensus = [(k, v) for k, v in consensus if str(k) not in fired]
+    fresh_consensus = [(k, v) for k, v in clusters.items()
+                       if len(v) >= CONSENSUS_MIN and str(k) not in fired]
 
-    # ---- report ----
-    lines = []
-    if new_events:
-        lines.append(f"**{len(new_events)} new trade(s) from tracked wallets**")
-        for e in sorted(new_events, key=lambda x: -x["usd"])[:12]:
-            lines.append(
-                f"• `{e['trader']}` (score {e['score']}) {e['side']} "
-                f"**{e['outcome']}** @ {e['price']:.2f} — ${e['usd']:,.0f}\n"
-                f"   _{e['title'][:90]}_"
-            )
+    # ---- group into buckets and send separately ----
+    groups = defaultdict(list)
+    for e in new_events:
+        groups[route_bucket(e["cat"])].append(e)
     for k, wallets in fresh_consensus:
         d = detail[k][0]
-        total = sum(x["usd"] for x in detail[k])
-        lines.append(
-            f"\n🔺 **CONSENSUS** — {len(wallets)} tracked wallets {d['side']} "
-            f"**{d['outcome']}** on _{d['title'][:80]}_ "
-            f"(${total:,.0f} combined, last {CONSENSUS_HOURS}h)"
-        )
+        groups[route_bucket(d["cat"])].append({"consensus": True, "k": k,
+                                               "wallets": wallets,
+                                               "detail": detail[k], "d": d})
         fired.add(str(k))
 
-    if lines:
-        send("\n".join(lines))
-        print("\n".join(lines))
+    if not groups:
+        msg = "No new qualifying activity"
+        if stale_skipped:
+            msg += f" ({stale_skipped} trade(s) skipped as older than {MAX_AGE_MIN:.0f} min)"
+        print(msg)
     else:
-        print("No new qualifying activity.")
+        for bucket, items in groups.items():
+            body = render(bucket, items)
+            print(f"\n===== {bucket} =====\n{body}")
+            send(body, webhook_for(bucket))
+        if stale_skipped:
+            print(f"\n({stale_skipped} trade(s) skipped as older than {MAX_AGE_MIN:.0f} min)")
 
     json.dump({
         "updated": now_iso(),
         "seen_tx": list(seen)[-6000:],
         "recent": recent[-2000:],
         "fired_consensus": list(fired)[-500:],
+        "categories": dict(list(cat_cache.items())[-4000:]),
     }, open(STATE_FILE, "w"), indent=2)
 
 
+def route_bucket(cat):
+    """Collapse categories into the channels we actually send to."""
+    if cat in ("SPORTS", "ESPORTS"):
+        return "SPORTS"
+    if cat == "CRYPTO":
+        return "CRYPTO"
+    return "OTHER"
+
+
+ICON = {"SPORTS": "\U0001F3C8", "CRYPTO": "\u20BF", "OTHER": "\U0001F4CA"}
+
+
+def render(bucket, items):
+    trades = [i for i in items if not i.get("consensus")]
+    cons = [i for i in items if i.get("consensus")]
+    lines = [f"{ICON.get(bucket,'')} **{bucket}** — {len(trades)} trade(s)"]
+
+    for e in sorted(trades, key=lambda x: -x["usd"])[:12]:
+        age = int((time.time() - e["ts"]) / 60)
+        lines.append(
+            f"\u2022 `{e['trader']}` (score {e['score']}) {e['side']} "
+            f"**{e['outcome']}** @ {e['price']:.2f} \u2014 ${e['usd']:,.0f} "
+            f"\u2014 {age}m ago\n   _{e['title'][:90]}_"
+        )
+    for c in cons:
+        d, total = c["d"], sum(x["usd"] for x in c["detail"])
+        lines.append(
+            f"\n\U0001F53A **CONSENSUS** \u2014 {len(c['wallets'])} wallets {d['side']} "
+            f"**{d['outcome']}** on _{d['title'][:80]}_ "
+            f"(${total:,.0f} combined, last {CONSENSUS_HOURS}h)"
+        )
+    return "\n".join(lines)
+
+
 # ----------------------------------------------------------------------------
-def send(msg):
-    if DISCORD_WEBHOOK:
+def send(msg, webhook=None):
+    hook = webhook or DISCORD_WEBHOOK
+    if hook:
         for chunk in [msg[i:i + 1900] for i in range(0, len(msg), 1900)]:
             try:
-                requests.post(DISCORD_WEBHOOK, json={"content": chunk}, timeout=15)
+                requests.post(hook, json={"content": chunk}, timeout=15)
             except Exception as e:
                 print(f"discord failed: {e}")
     if TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
@@ -350,8 +506,14 @@ def send(msg):
                       "parse_mode": "Markdown"}, timeout=15)
         except Exception as e:
             print(f"telegram failed: {e}")
-    if not DISCORD_WEBHOOK and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
-        print("(no webhook configured — printing only)")
+    if not hook and not (TELEGRAM_TOKEN and TELEGRAM_CHAT_ID):
+        print("(no webhook configured \u2014 printing only)")
+
+
+def webhook_for(bucket):
+    return {"SPORTS": SPORTS_WEBHOOK,
+            "CRYPTO": CRYPTO_WEBHOOK,
+            "OTHER": OTHER_WEBHOOK}.get(bucket) or DISCORD_WEBHOOK
 
 
 def now_iso():
