@@ -1,311 +1,361 @@
 {
-  "generated": "2026-10-26T15:53:56+00:00",
+  "generated": "2026-11-02T19:13:53+00:00",
   "traders": [
     {
       "wallet": "0xf0318c32136c2db7fec88b84869aee6a1106c80c",
       "name": "BreakTheBank",
-      "consistency_score": 7.838,
+      "consistency_score": 7.861,
       "windows": [
         "DAY",
         "WEEK",
         "MONTH",
         "ALL"
       ],
-      "pnl": 10460903.945041,
-      "vol": 341466439.96376854,
+      "pnl": 10618601.7364,
+      "vol": 356904227.408214,
       "open_positions": 500,
-      "open_value": 2132865.6849,
+      "open_value": 3859917.8546,
       "trade_count": 500,
-      "distinct_markets": 16
+      "distinct_markets": 31
+    },
+    {
+      "wallet": "0x2005d16a84ceefa912d4e380cd32e7ff827875ea",
+      "name": "RN1",
+      "consistency_score": 6.542,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH",
+        "ALL"
+      ],
+      "pnl": 13375546.785279,
+      "vol": 1448327443.6585279,
+      "open_positions": 500,
+      "open_value": 153040.3313,
+      "trade_count": 500,
+      "distinct_markets": 149
     },
     {
       "wallet": "0x5268527977f700f9bf9b6d5cd843859e4e70135d",
       "name": "HomeRunHazard",
-      "consistency_score": 5.997,
-      "windows": [
-        "WEEK",
-        "MONTH",
-        "ALL"
-      ],
-      "pnl": 2913992.300376,
-      "vol": 467741265.2034351,
-      "open_positions": 500,
-      "open_value": 254626.955,
-      "trade_count": 500,
-      "distinct_markets": 96
-    },
-    {
-      "wallet": "0x2a69660046d7acc4ab204d7cc5ba78b0776cd2f7",
-      "name": "UpTheBlues",
-      "consistency_score": 5.329,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 2221195.850836177,
-      "vol": 157944327.9720735,
-      "open_positions": 500,
-      "open_value": 106884.1404,
-      "trade_count": 500,
-      "distinct_markets": 121
-    },
-    {
-      "wallet": "0x4f1d5ae26fc31472966e951af3183308736d8de2",
-      "name": "e46m3",
-      "consistency_score": 5.316,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 3080302.7796240356,
-      "vol": 3104758.2782460754,
-      "open_positions": 500,
-      "open_value": 15612.4959,
-      "trade_count": 500,
-      "distinct_markets": 115
-    },
-    {
-      "wallet": "0xb0e74df9430a089aa102e2207af5fde1967439d2",
-      "name": "0xb0e74DF9430A089Aa102e2207Af5fde1967439D2-1789545517033",
-      "consistency_score": 5.181,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 1953927.5530684819,
-      "vol": 4602.99,
-      "open_positions": 500,
-      "open_value": 1369.2051,
-      "trade_count": 28,
-      "distinct_markets": 27
-    },
-    {
-      "wallet": "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
-      "name": "jakepaulthegoat2008",
-      "consistency_score": 5.131,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 1448622.5886363795,
-      "vol": 11633800.341693996,
-      "open_positions": 42,
-      "open_value": 2513918.8415,
-      "trade_count": 500,
-      "distinct_markets": 18
-    },
-    {
-      "wallet": "0x5a218c7ad04135830a45c41aaed7294df7809318",
-      "name": "balthazar",
-      "consistency_score": 5.037,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 1167627.975404047,
-      "vol": 6319084.6666459665,
-      "open_positions": 500,
-      "open_value": 160638.598,
-      "trade_count": 500,
-      "distinct_markets": 141
-    },
-    {
-      "wallet": "0xfea31bc088000ff909be1dfd8d0e3f2c7ef2d227",
-      "name": "ndb1",
-      "consistency_score": 4.768,
-      "windows": [
-        "WEEK",
-        "MONTH",
-        "ALL"
-      ],
-      "pnl": 2961904.958862,
-      "vol": 132058204.73482858,
-      "open_positions": 500,
-      "open_value": 4579149.8559,
-      "trade_count": 500,
-      "distinct_markets": 15
-    },
-    {
-      "wallet": "0x076daa87c4fe1a85402a9b6b8e0a866224388d4c",
-      "name": "omnibus-076daa",
-      "consistency_score": 4.508,
+      "consistency_score": 6.182,
       "windows": [
         "DAY",
         "WEEK",
         "MONTH",
         "ALL"
       ],
-      "pnl": 3455077.633843,
-      "vol": 157375545.90014082,
+      "pnl": 3007843.719419,
+      "vol": 488978764.334612,
       "open_positions": 500,
-      "open_value": 58127.7995,
+      "open_value": 487999.8604,
       "trade_count": 500,
-      "distinct_markets": 173
+      "distinct_markets": 139
     },
     {
-      "wallet": "0x23d81ba9371e576015c1e562db09c689f56b0288",
-      "name": "flawfence",
-      "consistency_score": 4.415,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 692223.3961988412,
-      "vol": 3588606.393591998,
-      "open_positions": 418,
-      "open_value": 728909.6755,
-      "trade_count": 500,
-      "distinct_markets": 11
-    },
-    {
-      "wallet": "0x5fdd66ffd0325d4e8d1d86fbec50caa31770a747",
-      "name": "juice-fruit",
-      "consistency_score": 4.033,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 1089720.2419561502,
-      "vol": 9567548.417341996,
-      "open_positions": 29,
-      "open_value": 46920.8936,
-      "trade_count": 500,
-      "distinct_markets": 44
-    },
-    {
-      "wallet": "0x96489abcb9f583d6835c8ef95ffc923d05a86825",
-      "name": "anoin123",
-      "consistency_score": 3.812,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 852659.6141319021,
-      "vol": 5355635.95808,
-      "open_positions": 500,
-      "open_value": 1667944.9975,
-      "trade_count": 500,
-      "distinct_markets": 72
-    },
-    {
-      "wallet": "0x3a8aa345d5db7ec5138298c8c4f4540259be7699",
-      "name": "TheReturnOfDarthMaul",
-      "consistency_score": 3.207,
+      "wallet": "0xe9b710551dd82a44e79203c2394a2b10163ace7b",
+      "name": "googleplay",
+      "consistency_score": 5.466,
       "windows": [
         "WEEK",
         "MONTH",
         "ALL"
       ],
-      "pnl": 1823281.214125,
-      "vol": 27590764.65739701,
-      "open_positions": 73,
-      "open_value": 1912437.3406,
-      "trade_count": 500,
-      "distinct_markets": 33
-    },
-    {
-      "wallet": "0x8c0b024c17831a0dde038547b7e791ae6a0d7aa5",
-      "name": "THEHIGHLIFE",
-      "consistency_score": 3.187,
-      "windows": [
-        "DAY",
-        "MONTH",
-        "ALL"
-      ],
-      "pnl": 2045179.398735,
-      "vol": 90526577.92130996,
-      "open_positions": 500,
+      "pnl": 3948155.975933002,
+      "vol": 28130622.259924993,
+      "open_positions": 41,
       "open_value": 0.0,
-      "trade_count": 500,
-      "distinct_markets": 16
-    },
-    {
-      "wallet": "0xbc43c8bfbc4d77c2fc9011adad38ba43b88996d3",
-      "name": "0xBc43c8bfBC4d77c2FC9011adaD38Ba43b88996d3-1765231687816",
-      "consistency_score": 3.097,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 476765.77615994914,
-      "vol": 23884451.96659,
-      "open_positions": 88,
-      "open_value": 86119.31539999999,
       "trade_count": 500,
       "distinct_markets": 24
     },
     {
-      "wallet": "0x5e6e2c3f06686f2607b86c90e35f536e81a1be00",
-      "name": "0xA0b86991c6218b36c1d19D4a29Eb0cE3606eB4",
-      "consistency_score": 3.074,
+      "wallet": "0x684baa57c338c2549aec0aa3f034f695d72a8409",
+      "name": "monkeymashingkeyboard",
+      "consistency_score": 4.879,
       "windows": [
         "DAY",
         "WEEK",
         "MONTH"
       ],
-      "pnl": 268268.53354959487,
-      "vol": 4763338.736702001,
-      "open_positions": 7,
-      "open_value": 78234.6192,
+      "pnl": 974552.2745844751,
+      "vol": 15388819.649231002,
+      "open_positions": 500,
+      "open_value": 197360.0278,
       "trade_count": 500,
       "distinct_markets": 20
     },
     {
-      "wallet": "0x67542c3219b37fd1610aad290676ff91cdbfe3bc",
-      "name": "gmpm2",
-      "consistency_score": 2.817,
+      "wallet": "0x7ad71d79a3bb90d0a87a06500fa0fe11663842aa",
+      "name": "theowalcott",
+      "consistency_score": 4.87,
       "windows": [
         "DAY",
         "WEEK",
+        "MONTH"
+      ],
+      "pnl": 1055798.4784070388,
+      "vol": 7891963.12892,
+      "open_positions": 121,
+      "open_value": 0.0,
+      "trade_count": 500,
+      "distinct_markets": 14
+    },
+    {
+      "wallet": "0x57a85952044f2c8e4d31b475aab6987d2f98ebc2",
+      "name": "Mooseborzoiii",
+      "consistency_score": 4.766,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 878723.9200560702,
+      "vol": 34009630.286940075,
+      "open_positions": 42,
+      "open_value": 0.0,
+      "trade_count": 500,
+      "distinct_markets": 5
+    },
+    {
+      "wallet": "0x83720820a8aa6c3f20ad71850e7a1a17d16c5223",
+      "name": "Jsram",
+      "consistency_score": 4.678,
+      "windows": [
+        "WEEK",
+        "MONTH",
         "ALL"
       ],
-      "pnl": 2187380.171267,
-      "vol": 119806178.93715106,
-      "open_positions": 3,
-      "open_value": 172149.768,
+      "pnl": 2342452.095189,
+      "vol": 71602884.871562,
+      "open_positions": 34,
+      "open_value": 114304.5509,
+      "trade_count": 500,
+      "distinct_markets": 178
+    },
+    {
+      "wallet": "0xa38a455bbdd4b68486548b7e19da99903f4f821d",
+      "name": "takeormake",
+      "consistency_score": 4.519,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 814176.1398067812,
+      "vol": 30380470.320777997,
+      "open_positions": 500,
+      "open_value": 5755.2074,
+      "trade_count": 500,
+      "distinct_markets": 84
+    },
+    {
+      "wallet": "0x96489abcb9f583d6835c8ef95ffc923d05a86825",
+      "name": "anoin123",
+      "consistency_score": 4.497,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 983658.7280110187,
+      "vol": 6250420.642357,
+      "open_positions": 500,
+      "open_value": 1017456.1717,
+      "trade_count": 500,
+      "distinct_markets": 42
+    },
+    {
+      "wallet": "0xa2cced8bfae7d645f7f437fb76becf2fcbb70cbc",
+      "name": "justwins",
+      "consistency_score": 4.24,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 607811.2176580001,
+      "vol": 4689048.888046,
+      "open_positions": 1,
+      "open_value": 0.0,
+      "trade_count": 500,
+      "distinct_markets": 17
+    },
+    {
+      "wallet": "0x6ac5bb06a9eb05641fd5e82640268b92f3ab4b6e",
+      "name": "jakepaulthegoat2008",
+      "consistency_score": 4.213,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 1259706.7535808138,
+      "vol": 22188023.43446101,
+      "open_positions": 101,
+      "open_value": 2604967.0036,
+      "trade_count": 500,
+      "distinct_markets": 10
+    },
+    {
+      "wallet": "0xf705fa045201391d9632b7f3cde06a5e24453ca7",
+      "name": "0xf705fa045201391d9632b7f3cde06a5e24453ca7",
+      "consistency_score": 3.972,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH",
+        "ALL"
+      ],
+      "pnl": 2456590.80706,
+      "vol": 103202657.58941008,
+      "open_positions": 121,
+      "open_value": 956277.7626,
+      "trade_count": 500,
+      "distinct_markets": 79
+    },
+    {
+      "wallet": "0xa19cbababc312f9df185e49d7004c249ed1ade6b",
+      "name": "Tokor",
+      "consistency_score": 3.848,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 715544.5686544449,
+      "vol": 3079268.515154002,
+      "open_positions": 106,
+      "open_value": 400421.3261,
+      "trade_count": 500,
+      "distinct_markets": 147
+    },
+    {
+      "wallet": "0xc9bfc7986767173b4f1c3fc9b2c6b255fc7381c0",
+      "name": "0xC9BFc7986767173b4f1c3FC9B2c6b255F",
+      "consistency_score": 3.308,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 408529.89330484986,
+      "vol": 2893667.918713,
+      "open_positions": 13,
+      "open_value": 109016.7136,
+      "trade_count": 500,
+      "distinct_markets": 48
+    },
+    {
+      "wallet": "0x2879ded7fe05df00eddbb2fba412a0d30964411a",
+      "name": "chongchong37",
+      "consistency_score": 3.272,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 355353.12098086585,
+      "vol": 3369812.1190060005,
+      "open_positions": 106,
+      "open_value": 72496.9823,
+      "trade_count": 500,
+      "distinct_markets": 40
+    },
+    {
+      "wallet": "0x448861155279dbf833d041b963e3ac854599e319",
+      "name": "0x448861155279dbf833d041b963e3ac854599e319",
+      "consistency_score": 3.151,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 399801.1772610855,
+      "vol": 4585124.171755999,
+      "open_positions": 38,
+      "open_value": 729310.9898,
+      "trade_count": 500,
+      "distinct_markets": 24
+    },
+    {
+      "wallet": "0x252d7bae5ec87553dcafb23e275c202ac0d3c456",
+      "name": "getbipped",
+      "consistency_score": 3.011,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 458273.2646331904,
+      "vol": 1525671.0709270001,
+      "open_positions": 430,
+      "open_value": 232745.5795,
+      "trade_count": 500,
+      "distinct_markets": 75
+    },
+    {
+      "wallet": "0xed107a85a4585a381e48c7f7ca4144909e7dd2e5",
+      "name": "elmcap2",
+      "consistency_score": 2.905,
+      "windows": [
+        "WEEK",
+        "MONTH",
+        "ALL"
+      ],
+      "pnl": 2326951.885696,
+      "vol": 304243191.9288256,
+      "open_positions": 111,
+      "open_value": 6901308.1797,
+      "trade_count": 500,
+      "distinct_markets": 49
+    },
+    {
+      "wallet": "0x8c0b024c17831a0dde038547b7e791ae6a0d7aa5",
+      "name": "THEHIGHLIFE",
+      "consistency_score": 2.886,
+      "windows": [
+        "DAY",
+        "MONTH",
+        "ALL"
+      ],
+      "pnl": 1996875.824622,
+      "vol": 91290084.20534699,
+      "open_positions": 500,
+      "open_value": 270000.0,
+      "trade_count": 500,
+      "distinct_markets": 22
+    },
+    {
+      "wallet": "0x79ae097215202b5d01f98e4479fb219102469a4a",
+      "name": "CORGII",
+      "consistency_score": 2.732,
+      "windows": [
+        "DAY",
+        "WEEK",
+        "MONTH"
+      ],
+      "pnl": 307247.5791910001,
+      "vol": 8429599.629335001,
+      "open_positions": 500,
+      "open_value": 32237.6437,
       "trade_count": 500,
       "distinct_markets": 36
     },
     {
-      "wallet": "0xb7271c112cbd83eb4c1ef1b554ff963604ae2a9d",
-      "name": "Elaran1993",
-      "consistency_score": 2.431,
+      "wallet": "0xf3ce7f04dde4f8c5aed19a20e5ecd8520e5ca57a",
+      "name": "Sisyphus-",
+      "consistency_score": 1.522,
       "windows": [
         "DAY",
         "WEEK",
         "MONTH"
       ],
-      "pnl": 301640.46065,
-      "vol": 802615.0592499999,
-      "open_positions": 42,
-      "open_value": 0.0,
+      "pnl": 213727.53144041993,
+      "vol": 3016711.520597,
+      "open_positions": 500,
+      "open_value": 3047.9346,
       "trade_count": 500,
-      "distinct_markets": 113
-    },
-    {
-      "wallet": "0xc301c1e034e71e1a6ce9684f029c4674a00466aa",
-      "name": "Contestable-Parfait",
-      "consistency_score": 1.697,
-      "windows": [
-        "DAY",
-        "WEEK",
-        "MONTH"
-      ],
-      "pnl": 199203.49095344433,
-      "vol": 2472219.4674630007,
-      "open_positions": 162,
-      "open_value": 308061.4925,
-      "trade_count": 500,
-      "distinct_markets": 74
+      "distinct_markets": 172
     }
   ]
 }
